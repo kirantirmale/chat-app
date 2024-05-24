@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Socket.IO chat</title>
+    <style>
+      body {
+        margin: 0;
+        padding-bottom: 3rem;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        background-color: #fff; /* Bright background */
+      }
+      
+      #form {
+        background: rgba(
+          255,
+          255,
+          255,
+          0.85
+        ); /* Bright semi-transparent background */
+        padding: 0.5rem;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        height: 4rem;
+        box-sizing: border-box;
+        backdrop-filter: blur(10px);
+        border-top: 1px solid #ddd;
+      }
+
+      #input {
+        border: 1px solid #ddd;
+        padding: 0 1rem;
+        flex-grow: 1;
+        border-radius: 1.5rem;
+        margin: 0.25rem;
+        background-color: #f9f9f9; /* Light grey background */
+      }
+
+      #input:focus {
+        outline: none;
+        border-color: #ccc; /* Slightly darker border on focus */
+      }
+
+      #form > button {
+        background: #fffc00; /* Snapchat yellow */
+        border: none;
+        padding: 0 1rem;
+        margin: 0.25rem;
+        border-radius: 1.5rem;
+        outline: none;
+        color: #000; /* Black text */
+        font-weight: bold;
+      }
+
+      .messages {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        padding-top: 1rem;
+      }
+
+      .messages > li {
+        padding: 0.75rem 1rem;
+        margin: 0.5rem;
+        border-radius: 1.5rem;
+        max-width: 60%;
+        word-wrap: break-word;
+        display: inline-block;
+      }
+
+      .messages .odd {
+        background: #d3d3d3; 
+        align-self: flex-end;
+        color: green; 
+        text-align: right;
+        margin-left: auto;
+      }
+
+      .messages .even {
+        background: #ececec; 
+        align-self: flex-start;
+        color: red; 
+        text-align: left;
+        margin-right: auto;
+      }
+
+      #userMessages {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding-bottom: 5rem; 
+        list-style-type: none; 
+      }
+   
+      .profile img{
+        width: 55px ;
+        border-radius: 50% ;
+      }
+      .header {
+        width: 100%;
+        padding: 15px;
+        background: rgba(231, 222, 222, 0.85); 
+       
+        top: 0;
+        display: flex;
+        box-sizing: border-box;
+      }
+    .chat h2{
+        margin-top: 5px;
+        font-size: 15px;
+    }
+    .chat p{
+        font-size: 10px;
+    }
+    .chat{
+        margin-left: 10px;
+    }
+   
+    </style>
+  </head>
+  <body>
+    <div class="header">
+        <div class="profile">
+          <img src="./assets/pro.avif" alt="Profile Picture" />
+        </div>
+        <div class="chat">
+          <h2>Kiran Tirmale 😍</h2>
+          <p>Last seen: <span id="lastSeenTime">10:00 AM</span></p> 
+        </div>
+      </div>
+    <div class="chatmsg">
+      <ul id="userMessages" class="messages">
+        
+      </ul>
+    </div>
+    <form id="form" action="">
+      <input id="input" autocomplete="off" placeholder="Type a message..." />
+      <button>Send</button>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+
+      const form = document.getElementById("form");
+      const input = document.getElementById("input");
+      const userMessages = document.getElementById("userMessages");
+
+      socket.on("chat message", (msg) => {
+        console.log("Displaying message:", msg);
+        const item = document.createElement("li");
+        item.textContent = msg;
+        item.className =
+          userMessages.children.length % 2 === 0 ? "odd" : " even";
+        userMessages.appendChild(item);
+        window.scrollTo(0, document.body.scrollHeight);
+      });
+
+      function updateLastSeenTime() {
+      const lastSeenTimeElement = document.getElementById('lastSeenTime');
+      setInterval(() => {
+        const currentTime = new Date();
+        const hours = currentTime.getHours();
+        const minutes = currentTime.getMinutes();
+        const formattedTime = `${hours}:${minutes < 10 ? '0' + minutes : minutes} ${(hours >= 12) ? 'PM' : 'AM'}`;
+        lastSeenTimeElement.textContent = formattedTime;
+      }, 1000); 
+    }
+
+    updateLastSeenTime();
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (input.value) {
+          console.log("Sending message:", input.value);
+          socket.emit("chat message", input.value);
+          input.value = "";
+        }
+      });
+    </script>
+  </body>
+</html>
